@@ -6,7 +6,7 @@ const dayStrings = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
 const monthStrings = ["Jan", "Feb", "März", "Apr", "Mai", "Juni", "Juli", "Aug", "Sept", "Okt", "Nov", "Dez"]
 
 const loadEvents = async () => {
-    const response = await fetch('/events', {
+    const response = await fetch('/sampleEvents', {
         method: 'get'
     })
     events = await response.json()
@@ -26,9 +26,15 @@ const renderEvent = (event) => {
     const tr1 = document.createElement("tr");
     const tdMonth = document.createElement("td");
     tdMonth.textContent = monthStrings[dateTime.getMonth()]
+    tdMonth.className = "month"
     tr1.appendChild(tdMonth);
     const tdTitle = document.createElement("td");
-    tdTitle.textContent = event.titleFormatted
+    const anchor = document.createElement("a")
+    anchor.className = "title"
+    anchor.textContent = event.titleFormatted
+    anchor.href = event.detailUrl
+    anchor.target = "_blank"
+    tdTitle.appendChild(anchor)
     tr1.appendChild(tdTitle);
 
     const tr2 = document.createElement("tr");
@@ -40,14 +46,13 @@ const renderEvent = (event) => {
     tr2.appendChild(tdDate);
 
     const tr3 = document.createElement("tr");
+    tr3.className = "lastRow";
     tr3.appendChild(document.createElement("td"));
     const tdLocation = document.createElement("td");
     tdLocation.textContent = event.locationFormatted
     tr3.appendChild(tdLocation);
 
-    const tr4 = document.createElement("tr");
-
-    return [tr1, tr2, tr3, tr4]
+    return [tr1, tr2, tr3]
 }
 
 globalThis.main = async function() {
