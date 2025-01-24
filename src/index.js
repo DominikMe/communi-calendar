@@ -1,23 +1,46 @@
 let events = []
-let page = 0
+let pageOffset = 0
 const eventsPerPage = 3
 
 const dayStrings = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
 const monthStrings = ["Jan", "Feb", "März", "Apr", "Mai", "Juni", "Juli", "Aug", "Sept", "Okt", "Nov", "Dez"]
 
+const route = "/events";
+const testRoute = "/sampleEvents";
+
 const loadEvents = async () => {
-    const response = await fetch('/sampleEvents', {
+    const response = await fetch(testRoute, {
         method: 'get'
     })
+    // we're assuming they are chronologically sorted
     events = await response.json()
 }
 
-const renderCalendar = () => {
+const renderCalendar = (offset) => {
     const table = document.getElementById('calendar');
     table.innerHTML = "";
-    events.forEach(event => {
+
+    if (offset == undefined) {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        let i = events.findIndex(x => new Date(x.dateTime) >= now);
+        if (i == -1) {
+            // no future events, we'll render only the last event from the past
+            pageOffset = events.length - 1;
+        }
+        else {
+            pageOffset = i;
+        }
+    }
+    else {
+        pageOffset = offset;
+    }
+
+    events.slice(Math.max(0, pageOffset), pageOffset + eventsPerPage).forEach(event => {
         renderEvent(event).forEach(element => table.appendChild(element))
     });
+
+    table.appendChild(renderNav());
 }
 
 const renderEvent = (event) => {
@@ -53,6 +76,33 @@ const renderEvent = (event) => {
     tr3.appendChild(tdLocation);
 
     return [tr1, tr2, tr3]
+}
+
+const renderNav = () => {
+    const tr = document.createElement("tr");
+    tr.className = "navRow";
+    tr.appendChild(document.createElement("td"));
+    const tdNav = document.createElement("td");
+
+    const left = document.createElement("button");
+    left.textContent = "<";
+    left.onclick = () => navigate(pageOffset - eventsPerPage);
+    left.disabled = pageOffset <= 0;
+    tdNav.appendChild(left);
+
+    const right = document.createElement("button");
+    right.textContent = ">";
+    right.onclick = () => navigate(pageOffset + eventsPerPage);
+    right.disabled = pageOffset + eventsPerPage >= events.length;
+    tdNav.appendChild(right);
+    
+    tr.appendChild(tdNav);
+
+    return tr;
+}
+
+const navigate = (offset) => {
+    renderCalendar(Math.min(events.length - 1, offset));
 }
 
 globalThis.main = async function() {
