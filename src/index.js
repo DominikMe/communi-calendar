@@ -9,7 +9,7 @@ const route = "/events";
 const testRoute = "/sampleEvents";
 
 const loadEvents = async () => {
-    const response = await fetch(testRoute, {
+    const response = await fetch(route, {
         method: 'get'
     })
     // we're assuming they are chronologically sorted

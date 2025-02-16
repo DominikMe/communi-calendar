@@ -15,7 +15,7 @@ app.get('/events', async (req, res) => {
         }
     })
     const result = await response.json()
-    const events = result.filter(x => x.isOfficial)
+    const events = result.filter(x => x.isOfficial).sort((a, b) => Date.parse(a.dateTime) - Date.parse(b.dateTime))
     events.forEach(x => { x.detailUrl = `https://${process.env.COMMUNI_APP}.communiapp.de/page/detail/tab/event-${x.id}` })
     res.send(events);
 })
