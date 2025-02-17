@@ -8,6 +8,8 @@ const monthStrings = ["Jan", "Feb", "März", "Apr", "Mai", "Juni", "Juli", "Aug"
 const route = "/events";
 const testRoute = "/sampleEvents";
 
+const domParser = new DOMParser();
+
 const loadEvents = async () => {
     const response = await fetch(route, {
         method: 'get'
@@ -54,7 +56,7 @@ const renderEvent = (event) => {
     const tdTitle = document.createElement("td");
     const anchor = document.createElement("a")
     anchor.className = "title"
-    anchor.textContent = event.titleFormatted
+    anchor.textContent = domParser.parseFromString(event.titleFormatted, "text/html").documentElement.textContent;
     anchor.href = event.detailUrl
     anchor.target = "_blank"
     tdTitle.appendChild(anchor)
