@@ -8,6 +8,7 @@ const monthStrings = ["Jan", "Feb", "März", "Apr", "Mai", "Juni", "Juli", "Aug"
 
 const route = "/events";
 const testRoute = "/sampleEvents";
+const prodRoute = "https://lgvstuttgart-kalender.onrender.com/events"
 
 const domParser = new DOMParser();
 const now = new Date();
@@ -35,7 +36,7 @@ const populateMonths = (events) => {
 }
 
 const loadEvents = async () => {
-    const response = await fetch(route, {
+    const response = await fetch(prodRoute, {
         method: 'get'
     });
     // we're assuming they are chronologically sorted

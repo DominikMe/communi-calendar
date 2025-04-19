@@ -6,12 +6,17 @@
   "type": "module",
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rimraf dist && copyfiles --flat public/* dist && copyfiles --flat src/* dist"
   },
   "author": "Dominik Messinger",
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.21.1"
+  },
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "rimraf": "^6.0.1"
   }
 }
