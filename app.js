@@ -1,11 +1,13 @@
 import { generateEvents } from "./sampleData/eventGenerator.js"
 import 'dotenv/config'
-import express from 'express' 
+import express from 'express'
+import cors from 'cors'
 const app = express()
 const port = 3000
 
 app.use(express.static('src'))
 app.use(express.static('public'))
+app.use(cors())
 
 const thirtyOneDays = 31 * 24 * 60 * 60 * 1000;
 
