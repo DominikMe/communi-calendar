@@ -40,19 +40,69 @@ const loadEvents = async () => {
     });
     // we're assuming they are chronologically sorted
     let events = await response.json();
-    populateMonths(events);
+    let allEvents = [...mixInSundays(events)];
+    populateMonths(allEvents);
 }
 
-const mixInSundays = (events) => {
-    let last = {
-        dateTime: new Date(0)
-    }
-    for (let e of events) {
-        const d = new Date(e.dateTime);
-        if (d.getDay() != 0) {
+function* mixInSundays(events) {
+    let last = events[0];
+    yield last;
+    let next = 1;
+    while (next < events.length) {
+        const e = events[next];
+        const nextSunday = findNextSunday(new Date(last.dateTime));
+        const nextStartDate = new Date(e.dateTime);
+        if (nextStartDate.getDay() !== 0) {
+            if (nextStartDate.getTime() < nextSunday.getTime()) {
+                yield e;
+                last = e;
+                next++;
+            }
+            else {
+                const sundayEvent = createSundayEvent(nextSunday);
+                yield sundayEvent;
+                last = sundayEvent;
+            }
+        }
+        else {
+            // handle scheduled Sunday event
+            const nextEndDate = new Date(e.endDateTime);
+            const sundayEndTime = nextSunday.getTime() + 1000 * 60 * 60;
 
+            if (nextEndDate.getTime() > nextSunday.getTime()
+                && nextStartDate.getTime() < sundayEndTime) {
+                yield e;
+                last = e;
+                next++;
+            }
+            else {
+                const sundayEvent = createSundayEvent(nextSunday);
+                yield sundayEvent;
+                last = sundayEvent;
+            }
         }
     }
+}
+
+const findNextSunday = (date) => {
+    const nextSunday = new Date(date);
+    nextSunday.setDate(date.getDate() + (7 - date.getDay()));
+    nextSunday.setHours(10);
+    nextSunday.setMinutes(30);
+    return nextSunday;
+};
+
+const createSundayEvent = (date) => {
+    const end = new Date(date);
+    end.setHours(11);
+    end.setMinutes(30);
+    return {
+        dateTime: date,
+        endDateTime: end,
+        titleFormatted: "Gottesdienst",
+        locationFormatted: "Mittelstraße 12A",
+        detailUrl: "https://liebenzeller-gemeinde-stuttgart.de/Gottesdienst",
+    };
 }
 
 const renderCalendar = () => {
@@ -66,7 +116,7 @@ const renderCalendar = () => {
         renderEvent(event).forEach(element => table.appendChild(element))
     });
 
-    table.appendChild(renderNav());
+    renderNav();
 }
 
 const renderEvent = (event) => {
@@ -74,7 +124,7 @@ const renderEvent = (event) => {
     
     const tr1 = document.createElement("tr");
     const tdWeekDay = document.createElement("td");
-    tdWeekDay.textContent = dayStrings[dateTime.getDay()]
+    tdWeekDay.textContent = `${dateTime.getDate()}, ${dayStrings[dateTime.getDay()]}`
     tdWeekDay.className = "day"
     tr1.appendChild(tdWeekDay);
     const tdTitle = document.createElement("td");
@@ -101,26 +151,22 @@ const renderEvent = (event) => {
 }
 
 const renderNav = () => {
-    const tr = document.createElement("tr");
-    tr.className = "navRow";
-    tr.appendChild(document.createElement("td"));
-    const tdNav = document.createElement("td");
+    const navRow = document.getElementById("navRow");
+    navRow.innerHTML = "";
 
     const left = document.createElement("button");
     left.textContent = "<";
     left.onclick = () => navigate(-1);
     left.disabled = selectedMonth <= 0;
-    tdNav.appendChild(left);
+    navRow.appendChild(left);
 
     const right = document.createElement("button");
     right.textContent = ">";
     right.onclick = () => navigate(1);
     right.disabled = selectedMonth >= lastMonth;
-    tdNav.appendChild(right);
-    
-    tr.appendChild(tdNav);
+    navRow.appendChild(right);
 
-    return tr;
+    return navRow;
 }
 
 const navigate = (i) => {

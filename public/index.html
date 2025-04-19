@@ -6,15 +6,20 @@
                 font-family: Helvetica, sans-serif;
             }
 
-            table {
-                width: 100%;
-                border: 1px solid grey;
-                text-align: center;
-                color: #555555;
+            #container {
+                height: 500px;
+                overflow-y: auto;
                 background-color: #DCDCDC;
+                border: 1px solid grey;
             }
 
-            .title {
+            table {
+                width: 100%;
+                text-align: center;
+                color: #555555;
+            }
+
+            #title {
                 color: #18A390;
                 font-size: larger;
                 text-decoration: none;
@@ -30,7 +35,11 @@
                 padding-bottom: 2rem;
             }
 
-            tr.navRow button {
+            #navRow {
+                padding-left: 10px;
+            }
+
+            #navRow button {
                 font-size: large;
                 padding: 0.2rem;
                 margin: 0.2rem;
@@ -41,9 +50,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
-        <h2 id="title"></h2>
-        <table id="calendar">
+        <div>
+            <span id="title"></span>
+            <span id="navRow"></span>
+        </div>
+        <div id="container">
+            <table id="calendar">
         </table>
+        </div>
         <script>
             main();
         </script>
