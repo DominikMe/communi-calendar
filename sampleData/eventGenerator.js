@@ -21,10 +21,10 @@ const createEvent = (date) => {
 };
 
 export const generateEvents = (args) => {
-    const {count, startDate, millisecondsBetween} = {...args};
+    const {count, startDate, minutesBetween} = {...args};
     let result = [];
     for (let i = 1; i <= count; i++) {
-        result.push(createEvent(new Date(+startDate + i * millisecondsBetween)));
+        result.push(createEvent(new Date(+startDate + i * minutesBetween * 60 * 1000)));
     }
     return result;
 };

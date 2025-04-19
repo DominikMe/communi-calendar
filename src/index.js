@@ -1,6 +1,7 @@
-let events = []
-let pageOffset = 0
-const eventsPerPage = 3
+let eventsPerMonth = []
+let titlePerMonth = []
+let selectedMonth = ""
+let lastMonth
 
 const dayStrings = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
 const monthStrings = ["Jan", "Feb", "März", "Apr", "Mai", "Juni", "Juli", "Aug", "Sept", "Okt", "Nov", "Dez"]
@@ -9,36 +10,59 @@ const route = "/events";
 const testRoute = "/sampleEvents";
 
 const domParser = new DOMParser();
+const now = new Date();
+
+// current -> 1
+// previous -> 0
+const getMonth = (date) => {
+    if (date.getFullYear() === now.getFullYear() && date.getMonth() == now.getMonth()) return 1;
+    if (+date < +now) return 0;
+    const y = date.getFullYear() - now.getFullYear();
+    return  1 + date.getMonth() - now.getMonth() + y * 12;
+}
+
+const populateMonths = (events) => {
+    lastMonth = getMonth(new Date(events[events.length - 1].dateTime));
+    for (let m = 0; m <= lastMonth; m++) {
+        eventsPerMonth[m] = [];
+        titlePerMonth[m] = `${monthStrings[(now.getMonth() + m - 1) % 12]} ${now.getFullYear() + Math.round((m - 1) / 12)}`;
+    }
+    for (let e of events) {
+        const m = getMonth(new Date(e.dateTime));
+        eventsPerMonth[m] = eventsPerMonth[m] || [];
+        eventsPerMonth[m].push(e);
+    }
+}
 
 const loadEvents = async () => {
     const response = await fetch(route, {
         method: 'get'
-    })
+    });
     // we're assuming they are chronologically sorted
-    events = await response.json()
+    let events = await response.json();
+    populateMonths(events);
 }
 
-const renderCalendar = (offset) => {
+const mixInSundays = (events) => {
+    let last = {
+        dateTime: new Date(0)
+    }
+    for (let e of events) {
+        const d = new Date(e.dateTime);
+        if (d.getDay() != 0) {
+
+        }
+    }
+}
+
+const renderCalendar = () => {
+    const title = document.getElementById('title');
+    title.innerText = titlePerMonth[selectedMonth];
+
     const table = document.getElementById('calendar');
     table.innerHTML = "";
 
-    if (offset == undefined) {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        let i = events.findIndex(x => new Date(x.dateTime) >= now);
-        if (i == -1) {
-            // no future events, we'll render only the last event from the past
-            pageOffset = events.length - 1;
-        }
-        else {
-            pageOffset = i;
-        }
-    }
-    else {
-        pageOffset = offset;
-    }
-
-    events.slice(Math.max(0, pageOffset), pageOffset + eventsPerPage).forEach(event => {
+    eventsPerMonth[selectedMonth].forEach(event => {
         renderEvent(event).forEach(element => table.appendChild(element))
     });
 
@@ -49,10 +73,10 @@ const renderEvent = (event) => {
     const dateTime = new Date(event.dateTime);
     
     const tr1 = document.createElement("tr");
-    const tdMonth = document.createElement("td");
-    tdMonth.textContent = monthStrings[dateTime.getMonth()]
-    tdMonth.className = "month"
-    tr1.appendChild(tdMonth);
+    const tdWeekDay = document.createElement("td");
+    tdWeekDay.textContent = dayStrings[dateTime.getDay()]
+    tdWeekDay.className = "day"
+    tr1.appendChild(tdWeekDay);
     const tdTitle = document.createElement("td");
     const anchor = document.createElement("a")
     anchor.className = "title"
@@ -63,21 +87,17 @@ const renderEvent = (event) => {
     tr1.appendChild(tdTitle);
 
     const tr2 = document.createElement("tr");
-    const tdDay = document.createElement("td");
-    tdDay.textContent = dateTime.getDate()
-    tr2.appendChild(tdDay);
-    const tdDate = document.createElement("td");
-    tdDate.textContent = `${dateTime.getDate()}.${dateTime.getMonth() + 1}.${dateTime.getFullYear()}`
-    tr2.appendChild(tdDate);
-
-    const tr3 = document.createElement("tr");
-    tr3.className = "lastRow";
-    tr3.appendChild(document.createElement("td"));
+    tr2.className = "lastRow";
+    const tdTime = document.createElement("td");
+    const start = new Date(event.dateTime);
+    const end = new Date(event.endDateTime);
+    tdTime.textContent = `${start.toLocaleTimeString("de", { hour: "2-digit", minute: "2-digit" })}-${end.toLocaleTimeString("de", { hour: "2-digit", minute: "2-digit" })}`;
+    tr2.appendChild(tdTime);
     const tdLocation = document.createElement("td");
     tdLocation.textContent = event.locationFormatted
-    tr3.appendChild(tdLocation);
+    tr2.appendChild(tdLocation);
 
-    return [tr1, tr2, tr3]
+    return [tr1, tr2]
 }
 
 const renderNav = () => {
@@ -88,14 +108,14 @@ const renderNav = () => {
 
     const left = document.createElement("button");
     left.textContent = "<";
-    left.onclick = () => navigate(pageOffset - eventsPerPage);
-    left.disabled = pageOffset <= 0;
+    left.onclick = () => navigate(-1);
+    left.disabled = selectedMonth <= 0;
     tdNav.appendChild(left);
 
     const right = document.createElement("button");
     right.textContent = ">";
-    right.onclick = () => navigate(pageOffset + eventsPerPage);
-    right.disabled = pageOffset + eventsPerPage >= events.length;
+    right.onclick = () => navigate(1);
+    right.disabled = selectedMonth >= lastMonth;
     tdNav.appendChild(right);
     
     tr.appendChild(tdNav);
@@ -103,13 +123,15 @@ const renderNav = () => {
     return tr;
 }
 
-const navigate = (offset) => {
-    renderCalendar(Math.min(events.length - 1, offset));
+const navigate = (i) => {
+    selectedMonth += i;
+    renderCalendar();
 }
 
 globalThis.main = async function() {
     console.log("loaded")
 
     await loadEvents()
+    selectedMonth = 1
     renderCalendar()
 }
