@@ -48,16 +48,17 @@ const loadEvents = async () => {
 function* mixInSundays(events) {
     let last = events[0];
     yield last;
-    let next = 1;
-    while (next < events.length) {
-        const e = events[next];
+    let i = 1;
+    while (i < events.length) {
+        const e = events[i];
         const nextSunday = findNextSunday(new Date(last.dateTime));
-        const nextStartDate = new Date(e.dateTime);
-        if (nextStartDate.getDay() !== 0) {
-            if (nextStartDate.getTime() < nextSunday.getTime()) {
+
+        const startDate = new Date(e.dateTime);
+        if (startDate.getDay() !== 0) {
+            if (startDate.getTime() < nextSunday.getTime()) {
                 yield e;
                 last = e;
-                next++;
+                i++;
             }
             else {
                 const sundayEvent = createSundayEvent(nextSunday);
@@ -67,14 +68,14 @@ function* mixInSundays(events) {
         }
         else {
             // handle scheduled Sunday event
-            const nextEndDate = new Date(e.endDateTime);
+            const endDate = new Date(e.endDateTime);
             const sundayEndTime = nextSunday.getTime() + 1000 * 60 * 60;
 
-            if (nextEndDate.getTime() > nextSunday.getTime()
-                && nextStartDate.getTime() < sundayEndTime) {
+            const intersects = endDate.getTime() > nextSunday.getTime() && startDate.getTime() < sundayEndTime;
+            if (last == nextSunday || endDate.getTime() <= nextSunday.getTime() || intersects) {
                 yield e;
                 last = e;
-                next++;
+                i++;
             }
             else {
                 const sundayEvent = createSundayEvent(nextSunday);
@@ -125,7 +126,7 @@ const renderEvent = (event) => {
     
     const tr1 = document.createElement("tr");
     const tdWeekDay = document.createElement("td");
-    tdWeekDay.textContent = `${dateTime.getDate()}, ${dayStrings[dateTime.getDay()]}`
+    tdWeekDay.textContent = `${dateTime.getDate()} ◦ ${dayStrings[dateTime.getDay()]}`
     tdWeekDay.className = "day"
     tr1.appendChild(tdWeekDay);
     const tdTitle = document.createElement("td");
