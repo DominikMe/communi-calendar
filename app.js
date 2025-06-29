@@ -11,7 +11,7 @@ app.use(express.static('public'))
 app.use(cors())
 
 app.get('/events', async (req, res) => {
-    events = await fetchCommuniEvents()
+    const events = await fetchCommuniEvents()
     res.send(events);
 })
 
