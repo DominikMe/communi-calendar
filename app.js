@@ -2,7 +2,7 @@ import { generateEvents } from "./sampleData/eventGenerator.js"
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
-import { fetchCommuniEvents } from "./communi.js"
+import { fetchCommuniEvents } from "./azureFunctions/src/functions/communi.js"
 const app = express()
 const port = 3000
 

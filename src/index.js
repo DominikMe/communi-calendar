@@ -8,8 +8,8 @@ const monthStrings = ["Jan", "Feb", "März", "Apr", "Mai", "Juni", "Juli", "Aug"
 
 const route = "/events";
 const testRoute = "/sampleEvents";
-const prodRoute = "https://lgvstuttgart-kalender.onrender.com/events"
-const brokenAzureFunction = "https://lgvstuttgart-calendar.azurewebsites.net/api/communiEvents"
+const fallbackRenderRoute = "https://lgvstuttgart-kalender.onrender.com/events"
+const prodRoute = "https://lgvstuttgart-calendar.azurewebsites.net/api/communiEvents"
 
 const domParser = new DOMParser();
 const now = new Date();

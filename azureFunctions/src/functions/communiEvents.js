@@ -1,5 +1,5 @@
-const app = require('@azure/functions');
-// import { fetchCommuniEvents } from '../../../communi.js';
+import { app } from "@azure/functions";
+import { fetchCommuniEvents } from './communi.js';
 
 app.http('communiEvents', {
     methods: ['GET'],
@@ -7,8 +7,8 @@ app.http('communiEvents', {
     handler: async (request, context) => {
         context.log(`Http function processed request for url "${request.url}"`);
 
-        // const events = await fetchCommuniEvents();
+        const events = await fetchCommuniEvents();
 
-        return { body: JSON.stringify({}) };
+        return { body: JSON.stringify(events) };
     }
 });
